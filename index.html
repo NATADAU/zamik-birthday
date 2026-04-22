@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Замик — С днём рождения</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --cream:#F7F3EE; --ink:#2A2520; --muted:#8A8178; --border:#DDD8D0; --accent:#C4956A; }
+html, body { background:var(--cream); color:var(--ink); font-family:'Cormorant Garamond',Georgia,serif; min-height:100vh; overflow-x:hidden; -webkit-text-size-adjust:100%; }
+#confetti-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:50; }
+#balloon-canvas  { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:60; }
+.page { max-width:480px; margin:0 auto; position:relative; z-index:1; }
+
+.hero-photo { width:100%; height:100vw; max-height:480px; overflow:hidden; opacity:0; animation:fadeIn 1.8s ease forwards 0.2s; }
+.hero-photo img { width:100%; height:100%; object-fit:cover; object-position:center 55%; display:block; }
+
+.hero-text { padding:2.2rem 1.6rem 0; opacity:0; animation:fadeUp 1.2s ease forwards 0.7s; margin-bottom:2.4rem; }
+.hero-label { font-family:'Jost',sans-serif; font-weight:300; font-size:9px; letter-spacing:0.28em; text-transform:uppercase; color:var(--muted); margin-bottom:0.8rem; }
+.hero-name { font-size:18vw; font-weight:300; font-style:italic; line-height:1; letter-spacing:-0.01em; margin-bottom:1.1rem; }
+.hero-line { width:36px; height:1px; background:var(--accent); }
+
+.inner { padding:0 1.6rem; }
+
+.player { margin-bottom:3rem; opacity:0; animation:fadeUp 1.2s ease forwards 1.0s; }
+.player-tracks { display:flex; flex-direction:column; gap:10px; }
+.track {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  background:transparent;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:border-color 0.2s;
+}
+.track.active { border-color:var(--accent); }
+.track-btn {
+  width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--border);
+  background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.track.active .track-btn { border-color:var(--accent); }
+.track-btn svg { width:14px; height:14px; fill:var(--ink); }
+.track-info { font-family:'Jost',sans-serif; font-weight:300; flex:1; min-width:0; }
+.track-title { font-size:11px; color:var(--ink); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.track-sub { font-size:10px; color:var(--muted); }
+.track-progress { width:100%; height:1px; background:var(--border); margin-top:8px; }
+.track-fill { height:100%; background:var(--accent); width:0%; transition:width 0.5s linear; }
+
+.letter { opacity:0; animation:fadeUp 1.2s ease forwards 1.3s; margin-bottom:4rem; }
+.letter-salutation { font-size:22px; font-style:italic; font-weight:300; margin-bottom:1.6rem; }
+.letter p { font-size:17px; font-weight:300; line-height:1.88; margin-bottom:1.3em; }
+.dutch { font-style:italic; color:var(--accent); font-size:18px; }
+.sign { font-family:'Jost',sans-serif; font-weight:300; font-size:12px; color:var(--muted); letter-spacing:0.04em; margin-top:2rem; }
+
+.surprise-wrap { text-align:center; opacity:0; animation:fadeUp 1.2s ease forwards 1.6s; padding-bottom:4rem; }
+.surprise-btn {
+  font-family:'Jost',sans-serif; font-weight:300;
+  font-size:10px; letter-spacing:0.24em; text-transform:uppercase;
+  padding:15px 38px;
+  border:1px solid var(--border);
+  background:transparent; color:var(--muted); cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.surprise-btn:active { border-color:var(--accent); color:var(--accent); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<canvas id="balloon-canvas"></canvas>
+
+<div class="page">
+  <div class="hero-photo">
+    <img src="photo.jpg" alt="цветы в кедах" />
+  </div>
+
+  <div class="hero-text">
+    <p class="hero-label">С днём рождения</p>
+    <h1 class="hero-name">Замик</h1>
+    <div class="hero-line"></div>
+  </div>
+
+  <div class="inner">
+    <div class="player">
+      <div class="player-tracks">
+
+        <div class="track" id="track0" onclick="toggleTrack(0)">
+          <div class="track-btn">
+            <svg id="icon0" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg>
+          </div>
+          <div class="track-info">
+            <p class="track-title">Ноктюрн си-бемоль минор, op. 9 no. 1</p>
+            <p class="track-sub" id="sub0">нажми, чтобы услышать</p>
+            <div class="track-progress"><div class="track-fill" id="fill0"></div></div>
+          </div>
+        </div>
+
+        <div class="track" id="track1" onclick="toggleTrack(1)">
+          <div class="track-btn">
+            <svg id="icon1" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg>
+          </div>
+          <div class="track-info">
+            <p class="track-title">Этюд op. 25 no. 2, «Пчёлы»</p>
+            <p class="track-sub" id="sub1">нажми, чтобы услышать</p>
+            <div class="track-progress"><div class="track-fill" id="fill1"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="letter">
+      <p class="letter-salutation">Замик,</p>
+      <p>Есть люди, которых нам дарит жизнь через других людей — как будто кто-то очень мудрый решил, что вам непременно нужно встретиться. Я рада, что это случилось.</p>
+      <p>Ты из тех, кто умеет слышать — музыку, слова, людей. Кто берёт книгу и находит в ней именно то, что нужно было найти сегодня. Кто смеётся так, что хочется смеяться рядом.</p>
+      <p>В этот день я желаю тебе тепла — не парадного, а настоящего. Хороших новостей от детей. Спектакля, который останется с тобой надолго. И ещё много страниц, которые ждут тебя впереди.</p>
+      <p class="dutch">Gefeliciteerd, lieve Zamik.</p>
+      <p class="sign">— с любовью и радостью, что ты есть.</p>
+    </div>
+
+    <div class="surprise-wrap">
+      <button class="surprise-btn" onclick="launchBalloons()">сюрприз</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TRACKS = [
+  { file:'nocturne.mp3', name:'nocturne' },
+  { file:'chopin.mp3',   name:'etude'   }
+];
+const audios = [null, null];
+let currentPlaying = -1;
+
+function toggleTrack(idx) {
+  if (currentPlaying === idx) {
+    audios[idx].pause();
+    currentPlaying = -1;
+    setIcon(idx, false);
+    document.getElementById('sub'+idx).textContent = 'пауза';
+    return;
+  }
+  if (currentPlaying !== -1 && audios[currentPlaying]) {
+    audios[currentPlaying].pause();
+    setIcon(currentPlaying, false);
+    document.getElementById('sub'+currentPlaying).textContent = 'нажми, чтобы услышать';
+    document.getElementById('track'+currentPlaying).classList.remove('active');
+  }
+  if (!audios[idx]) {
+    audios[idx] = new Audio(TRACKS[idx].file);
+    audios[idx].volume = 0.6;
+    audios[idx].addEventListener('timeupdate', (function(i){ return function() {
+      if (this.duration)
+        document.getElementById('fill'+i).style.width = (this.currentTime/this.duration*100)+'%';
+    };})(idx));
+    audios[idx].addEventListener('ended', (function(i){ return function() {
+      currentPlaying = -1;
+      setIcon(i, false);
+      document.getElementById('sub'+i).textContent = 'нажми ещё раз';
+      document.getElementById('track'+i).classList.remove('active');
+    };})(idx));
+    audios[idx].addEventListener('error', (function(i){ return function() {
+      document.getElementById('sub'+i).textContent = 'файл не найден';
+    };})(idx));
+  }
+  document.getElementById('sub'+idx).textContent = 'загружается...';
+  document.getElementById('track'+idx).classList.add('active');
+  audios[idx].play().then(function() {
+    currentPlaying = idx;
+    setIcon(idx, true);
+    document.getElementById('sub'+idx).textContent = 'играет ♩';
+  }).catch(function() {
+    document.getElementById('sub'+idx).textContent = 'нажми ещё раз';
+    document.getElementById('track'+idx).classList.remove('active');
+  });
+}
+
+function setIcon(idx, playing) {
+  document.getElementById('icon'+idx).innerHTML = playing
+    ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+    : '<polygon points="6,4 20,12 6,20"/>';
+}
+
+// CONFETTI + STARS
+const cc = document.getElementById('confetti-canvas');
+const cctx = cc.getContext('2d');
+function resizeCC() { cc.width=window.innerWidth; cc.height=window.innerHeight; }
+resizeCC(); window.addEventListener('resize', resizeCC);
+const COLORS=['#F4C0D1','#CECBF6','#9FE1CB','#FAC775','#F0997B','#B5D4F4','#E8D5B7','#D4B8C7','#C4956A','#A8D8B0'];
+function makeP() {
+  const s=Math.random()<0.22;
+  return{x:Math.random()*cc.width, y:-20-Math.random()*60,
+    size:s?7+Math.random()*9:4+Math.random()*8,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)],
+    vy:1+Math.random()*1.8, vx:(Math.random()-0.5)*1.0,
+    rot:Math.random()*Math.PI*2, rotS:(Math.random()-0.5)*0.09,
+    isStar:s, wobble:Math.random()*Math.PI*2, wobbleS:0.02+Math.random()*0.025,
+    alpha:0.6+Math.random()*0.4, shape:Math.floor(Math.random()*3)};
+}
+let particles=Array.from({length:80},makeP).map(p=>{p.y=Math.random()*cc.height;return p;});
+function drawStar(ctx,x,y,r,rot){
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    const a1=rot+(i*4*Math.PI)/5, a2=rot+((i*4+2)*Math.PI)/5;
+    i===0?ctx.moveTo(x+r*Math.cos(a1),y+r*Math.sin(a1)):ctx.lineTo(x+r*Math.cos(a1),y+r*Math.sin(a1));
+    ctx.lineTo(x+r*0.42*Math.cos(a2),y+r*0.42*Math.sin(a2));
+  }
+  ctx.closePath(); ctx.fill();
+}
+function animConf(){
+  cctx.clearRect(0,0,cc.width,cc.height);
+  while(particles.length<80) particles.push(makeP());
+  for(let i=0;i<particles.length;i++){
+    const p=particles[i];
+    p.y+=p.vy; p.wobble+=p.wobbleS; p.x+=p.vx+Math.sin(p.wobble)*0.4; p.rot+=p.rotS;
+    if(p.y>cc.height+30){particles[i]=makeP();continue;}
+    cctx.save(); cctx.globalAlpha=p.alpha; cctx.fillStyle=p.color;
+    cctx.translate(p.x,p.y); cctx.rotate(p.rot);
+    if(p.isStar) drawStar(cctx,0,0,p.size,0);
+    else if(p.shape===0) cctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);
+    else if(p.shape===1){cctx.beginPath();cctx.ellipse(0,0,p.size/2,p.size/3,0,0,Math.PI*2);cctx.fill();}
+    else{cctx.beginPath();cctx.moveTo(0,-p.size/2);cctx.lineTo(p.size/2,p.size/2);cctx.lineTo(-p.size/2,p.size/2);cctx.closePath();cctx.fill();}
+    cctx.restore();
+  }
+  requestAnimationFrame(animConf);
+}
+animConf();
+
+// BALLOONS
+const bc=document.getElementById('balloon-canvas');
+const bctx=bc.getContext('2d');
+let balloonAnimId=null;
+function launchBalloons(){
+  bc.width=window.innerWidth; bc.height=window.innerHeight;
+  const colors=['#F4C0D1','#CECBF6','#9FE1CB','#FAC775','#F0997B','#B5D4F4','#E8D5B7','#D4B8C7'];
+  const balloons=Array.from({length:18},()=>({
+    x:40+Math.random()*(bc.width-80), y:bc.height+100+Math.random()*300,
+    r:42+Math.random()*26,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    speed:0.9+Math.random()*1.2,
+    sway:Math.random()*Math.PI*2, swaySpeed:0.009+Math.random()*0.012,
+    alpha:0.88+Math.random()*0.12
+  }));
+  let frame=0; cancelAnimationFrame(balloonAnimId);
+  function draw(){
+    bctx.clearRect(0,0,bc.width,bc.height); let alive=false;
+    balloons.forEach(b=>{
+      b.y-=b.speed; b.sway+=b.swaySpeed;
+      const sx=b.x+Math.sin(b.sway)*18;
+      if(b.y+b.r>-10) alive=true;
+      bctx.save(); bctx.globalAlpha=b.alpha;
+      bctx.beginPath(); bctx.ellipse(sx,b.y,b.r*0.76,b.r,0,0,Math.PI*2); bctx.fillStyle=b.color; bctx.fill();
+      bctx.beginPath(); bctx.ellipse(sx-b.r*0.22,b.y-b.r*0.3,b.r*0.14,b.r*0.09,-0.5,0,Math.PI*2); bctx.fillStyle='rgba(255,255,255,0.55)'; bctx.fill();
+      bctx.beginPath(); bctx.moveTo(sx,b.y+b.r);
+      bctx.bezierCurveTo(sx+Math.sin(b.sway)*10,b.y+b.r+18,sx-Math.sin(b.sway)*7,b.y+b.r+36,sx+Math.sin(b.sway*0.4)*8,b.y+b.r+52);
+      bctx.strokeStyle=b.color; bctx.lineWidth=1.2; bctx.globalAlpha=0.45; bctx.stroke();
+      bctx.restore();
+    });
+    frame++;
+    if(alive&&frame<900) balloonAnimId=requestAnimationFrame(draw);
+    else bctx.clearRect(0,0,bc.width,bc.height);
+  }
+  draw();
+}
+</script>
+</body>
+</html>
